@@ -1,13 +1,15 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
-const socketIO = require('socket.io');
-
 const app = express();
+const server = http.createServer(app);
+const socketIO = require('socket.io');
+const io = socketIO(server);
+
+const { generateMessage } = require('./utils/message');
 const port = process.env.PORT || 3000;  // heroku port setup
 const publicPath = path.join(__dirname, '../public');
-const server = http.createServer(app);
-const io = socketIO(server);
+
 
 // console.log(__dirname + '/../public');
 // console.log(publicPath);
@@ -36,30 +38,18 @@ io.on('connection', (socket) => {
   // });
 
   // socket.emit from admin, text - welcome to the chat app
-  socket.emit('newMessage', {
-    from: 'ADMIN',
-    text: 'Welcome to the chat app',
-    createdAt: new Date().getTime()
-  });
+  socket.emit('newMessage', generateMessage('ADMIN', 'Welcome to the chat app'));
 
   // socket.broadcast.emit from admin, text - new user joined
   // all new message event
-  socket.broadcast.emit('newMessage', {
-    from: 'ADMIN',
-    text: 'New user joined',
-    createdAt: new Date().getTime()
-  });
+  socket.broadcast.emit('newMessage', generateMessage('ADMIN', 'New user joined'));
 
   socket.on('createMessage', (message) => {
     console.log('create message', message);
 
     // socket.emit - emits to a single connection
     // io.emit - emits to everyone
-    io.emit('newMessage', {
-      from: message.from,
-      text: message.text,
-      createdAt: new Date().getTime()
-    });
+    io.emit('newMessage', generateMessage(message.from, message.text));
 
     // broadcasting - emit to everyone except 1 user
     // socket.broadcast.emit('newMessage', {
