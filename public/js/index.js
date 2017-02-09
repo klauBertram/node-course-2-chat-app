@@ -10,10 +10,10 @@ socket.on('connect', function() {
   //   createdAt: 456
   // });
 
-  socket.emit('createMessage', {
-    from: 'kenn@mastersonwg.com',
-    text: 'hey iron man!'
-  });
+  // socket.emit('createMessage', {
+  //   from: 'kenn@mastersonwg.com',
+  //   text: 'hey iron man!'
+  // });
 });
 
 socket.on('disconnect', function() {
