@@ -44,12 +44,18 @@ io.on('connection', (socket) => {
   // all new message event
   socket.broadcast.emit('newMessage', generateMessage('ADMIN', 'New user joined'));
 
-  socket.on('createMessage', (message) => {
+  socket.on('createMessage', (message, callback) => {
     console.log('create message', message);
 
     // socket.emit - emits to a single connection
     // io.emit - emits to everyone
     io.emit('newMessage', generateMessage(message.from, message.text));
+    // console.log('about to call callback', new Date().getTime());
+    // this call the callback function defined by the client
+    // can send anything back, most likely an object, example wise, we'll use string
+    callback({
+      message: 'this is from the server'
+    });
 
     // broadcasting - emit to everyone except 1 user
     // socket.broadcast.emit('newMessage', {
