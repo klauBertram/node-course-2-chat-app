@@ -6,7 +6,7 @@ const server = http.createServer(app);
 const socketIO = require('socket.io');
 const io = socketIO(server);
 
-const { generateMessage } = require('./utils/message');
+const { generateMessage, generateLocationMessage } = require('./utils/message');
 const port = process.env.PORT || 3000;  // heroku port setup
 const publicPath = path.join(__dirname, '../public');
 
@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
     // socket.broadcast.emit('newMessage', {
     //   from: message.from,
     //   text: message.text,
-    //   createdAt: new Date().getTime()
+    //   createdAt: new Date().getTime( )
     // });
 
     // socket.emit('newMessage', {
@@ -69,6 +69,10 @@ io.on('connection', (socket) => {
     //   text: message.text,
     //   createdAt: new Date()
     // });
+  });
+
+  socket.on('createLocationMessage', (coords) => {
+    io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
   });
 
   socket.on('disconnect', () => {
