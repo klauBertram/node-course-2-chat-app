@@ -21,7 +21,7 @@ function scrollToBottom() {
 }
 
 socket.on('connect', function() {
-  console.log('connected to server');
+  // console.log('connected to server');
 
   // socket.emit('createEmail', {
   //   to: 'kenn@mastersonwg.com',
@@ -33,6 +33,17 @@ socket.on('connect', function() {
   //   from: 'kenn@mastersonwg.com',
   //   text: 'hey iron man!'
   // });
+
+  var params = $.deparam(window.location.search);
+
+  socket.emit('join', params, function(errors){
+    if(errors){
+      alert(errors);
+      window.location.href = '/';
+    } else {
+      console.log('no error when join');
+    }
+  });
 });
 
 socket.on('disconnect', function() {

@@ -8,6 +8,7 @@ const socketIO = require('socket.io');
 const io = socketIO(server);
 
 const { generateMessage, generateLocationMessage } = require('./utils/message');
+const { isRealString } = require('./utils/validation');
 const port = process.env.PORT || 3000;  // heroku port setup
 const publicPath = path.join(__dirname, '../public');
 
@@ -44,6 +45,14 @@ io.on('connection', (socket) => {
   // socket.broadcast.emit from admin, text - new user joined
   // all new message event
   socket.broadcast.emit('newMessage', generateMessage('ADMIN', 'New user joined'));
+
+  socket.on('join', (params, callback) => {
+    if(!isRealString(params.name) || !isRealString(params.room)){
+      callback('name and room name are required');
+    }
+
+    callback();
+  });
 
   socket.on('createMessage', (message, callback) => {
     console.log('create message', message);
