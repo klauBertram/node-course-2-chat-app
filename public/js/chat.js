@@ -121,7 +121,6 @@ $('#message-form').on('submit', function(e){
   // only send message if textbox is not empty
   if(messageTextbox.val() !== ''){
     socket.emit('createMessage', {
-      from: 'user',
       text: messageTextbox.val()
     }, function(data){
       // console.log('got it!', data.message);

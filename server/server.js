@@ -73,17 +73,20 @@ io.on('connection', (socket) => {
   });
 
   socket.on('createMessage', (message, callback) => {
-    console.log('create message', message);
+    // console.log('create message', message);
+    var user = users.getUser(socket.id);
 
-    // socket.emit - emits to a single connection
-    // io.emit - emits to everyone
-    io.emit('newMessage', generateMessage(message.from, message.text));
-    // console.log('about to call callback', new Date().getTime());
-    // this call the callback function defined by the client
-    // can send anything back, most likely an object, example wise, we'll use string
-    callback({
-      message: 'this is from the server'
-    });
+    if(user && isRealString(message.text)){
+      // socket.emit - emits to a single connection
+      // io.emit - emits to everyone
+      io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+      // console.log('about to call callback', new Date().getTime());
+      // this call the callback function defined by the client
+      // can send anything back, most likely an object, example wise, we'll use string
+      callback({
+        message: 'this is from the server'
+      });
+    }
 
     // broadcasting - emit to everyone except 1 user
     // socket.broadcast.emit('newMessage', {
@@ -100,7 +103,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('createLocationMessage', (coords) => {
-    io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+    var user = users.getUser(socket.id);
+
+    if(user){
+      io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
+    }
   });
 
   socket.on('disconnect', () => {
