@@ -44,10 +44,22 @@ socket.on('connect', function() {
       console.log('no error when join');
     }
   });
-});
+}); 
 
 socket.on('disconnect', function() {
   console.log('disconnected from server');
+});
+
+socket.on('updateUserList', function(users){
+  // console.log('users list', users);
+
+  var ol = $('<ol></ol>');
+
+  users.forEach(function(user){
+    ol.append($('<li></li>').text(user));
+  });
+
+  $('#users').html(ol);
 });
 
 socket.on('newMessage', function(message){

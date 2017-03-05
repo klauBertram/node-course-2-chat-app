@@ -9,9 +9,11 @@ const io = socketIO(server);
 
 const { generateMessage, generateLocationMessage } = require('./utils/message');
 const { isRealString } = require('./utils/validation');
+const { Users } = require('./utils/users');
 const port = process.env.PORT || 3000;  // heroku port setup
 const publicPath = path.join(__dirname, '../public');
 
+var users = new Users();
 
 // console.log(__dirname + '/../public');
 // console.log(publicPath);
@@ -39,17 +41,33 @@ io.on('connection', (socket) => {
   //   createdAt: new Date()
   // });
 
-  // socket.emit from admin, text - welcome to the chat app
-  socket.emit('newMessage', generateMessage('ADMIN', 'Welcome to the chat app'));
-
-  // socket.broadcast.emit from admin, text - new user joined
-  // all new message event
-  socket.broadcast.emit('newMessage', generateMessage('ADMIN', 'New user joined'));
-
   socket.on('join', (params, callback) => {
     if(!isRealString(params.name) || !isRealString(params.room)){
-      callback('name and room name are required');
+      return callback('name and room name are required');
     }
+
+    socket.join(params.room);
+    // leaving room
+    // socket.leave(params.room);
+
+    // io.emit - emit to everyone
+    // io.to(params.name).emit - emit event to a specific room
+    // socket.broadcast - emit to everyone except yourself
+    // socket.broadcast.to(params.room) - emit to everyone in the room except yourself
+    // socket.emit - emit to 1 user
+
+    // if user joins a room, remove user from any previous joined rooms
+    users.removeUser(socket.id);
+    users.addUser(socket.id, params.name, params.room);
+
+    io.to(params.room).emit('updateUserList', users.getUserList(params.room));
+
+    // socket.emit from admin, text - welcome to the chat app
+    socket.emit('newMessage', generateMessage('ADMIN', 'Welcome to the chat app'));
+
+    // socket.broadcast.emit from admin, text - new user joined
+    // all new message event
+    socket.broadcast.to(params.room).emit('newMessage', generateMessage('ADMIN', `${params.name} has joined`));
 
     callback();
   });
@@ -87,6 +105,13 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('client disconnected');
+
+    var user = users.removeUser(socket.id);
+
+    if(user){
+      io.to(user.room).emit('updateUserList', users.getUserList(user.room));
+      io.to(user.room).emit('newMessage', generateMessage('ADMIN', `${user.name} has left`));
+    }
   });
 });
 
